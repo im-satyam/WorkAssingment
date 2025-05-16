@@ -58,13 +58,6 @@ export default function Register() {
       <form onSubmit={handleSubmit} className="bg-white p-8 rounded shadow-md w-96">
         <h2 className="text-2xl font-bold mb-6 text-center">Register</h2>
         <input
-          type="text"
-          name="name"
-          placeholder="Full Name"
-          onChange={handleChange}
-          className="w-full mb-4 px-4 py-2 border rounded"
-        />
-        <input
           type="email"
           name="email"
           placeholder="Email"
