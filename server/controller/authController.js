@@ -1,6 +1,8 @@
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const userModel = require("../model/userModel");
+const agentModel = require("../model/agentModel");
+const subAgentModel = require("../model/subAgentModel");
 
 const registerController = async (req, res) => {
   try {
@@ -39,11 +41,21 @@ const loginController = async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    const user = await userModel.findOne({ email });
+    let user = await userModel.findOne({ email });
 
     if (!user) {
-      return res.status(400).json({ message: "Invalid email or password" });
+      user = await agentModel.findOne({ email });
     }
+    if (!user) {
+      user = await subAgentModel.findOne({ email });
+    }
+    if (!user) {
+      res.status(200).send({
+        success: false,
+        message: "User not found",
+      });
+    }
+
     const comparePassword = await bcrypt.compare(password, user.password);
     if (!comparePassword) {
       return res.status(500).send({

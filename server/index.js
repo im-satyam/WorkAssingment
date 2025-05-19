@@ -15,6 +15,9 @@ connectDB();
 app.use("/v1", require("./router/authRouter"));
 app.use("/v1", require("./router/agentRouter"));
 app.use("/v1", require("./router/uploadRouter"));
+app.use("/v1", require("./router/subAgentRouter"));
+app.use("/v1", require("./router/getAgentRouter"));
+app.use("/v1", require("./router/getSubAgentRouter"));
 connectDB();
 
 app.listen(port, () => {

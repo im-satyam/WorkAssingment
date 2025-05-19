@@ -1,9 +1,11 @@
 const xlsx = require("xlsx");
 const fs = require("fs");
-const agentModel = require("../model/agentModel");
+const subAgentModel = require("../model/subAgentModel");
 
-const uploadController = async (req, res) => {
+const uploadToSubagentsController = async (req, res) => {
   try {
+    const userId = req.body.userId; // assuming JWT middleware sets req.user
+
     if (!req.file) {
       return res
         .status(400)
@@ -24,7 +26,7 @@ const uploadController = async (req, res) => {
       }
     }
 
-    // Remove duplicates based on phone number
+    // Remove duplicate phone entries
     const seenPhones = new Set();
     jsonData = jsonData.filter((item) => {
       if (seenPhones.has(item.Phone)) return false;
@@ -32,25 +34,28 @@ const uploadController = async (req, res) => {
       return true;
     });
 
-    const agents = await agentModel.find();
-    if (!agents.length) {
-      return res.status(400).json({ error: "No agents found in the system." });
+    // Get subagents for this agent (user)
+    const subagents = await subAgentModel.find({ userId });
+    if (!subagents.length) {
+      return res
+        .status(400)
+        .json({ error: "No subagents found for this agent." });
     }
 
-    // Clear existing items and work fields
-    for (const agent of agents) {
-      agent.items = [];
-      agent.work = 0;
-      await agent.save();
+    // Clear existing items and work fields for subagents
+    for (const sub of subagents) {
+      sub.items = [];
+      sub.work = 0;
+      await sub.save();
     }
 
     // Distribute tasks equally
-    const distributed = Array(agents.length)
+    const distributed = Array(subagents.length)
       .fill(null)
       .map(() => []);
 
     jsonData.forEach((item, index) => {
-      const i = index % agents.length;
+      const i = index % subagents.length;
       distributed[i].push({
         firstName: item.FirstName,
         phone: item.Phone,
@@ -58,19 +63,19 @@ const uploadController = async (req, res) => {
       });
     });
 
-    // Assign items and work
-    for (let i = 0; i < agents.length; i++) {
-      agents[i].items = distributed[i];
-      agents[i].work = distributed[i].length;
-      await agents[i].save();
+    // Assign items and update work count
+    for (let i = 0; i < subagents.length; i++) {
+      subagents[i].items = distributed[i];
+      subagents[i].work = distributed[i].length;
+      await subagents[i].save();
     }
 
-    // Delete uploaded file
+    // Delete uploaded file after processing
     fs.unlinkSync(req.file.path);
 
     res.status(200).json({
-      message: `File processed (duplicates removed) and distributed among ${agents.length} agent(s).`,
-      agents,
+      message: `File processed and distributed among ${subagents.length} subagent(s) of the current user.`,
+      subagents,
     });
   } catch (err) {
     console.error(err);
@@ -78,4 +83,4 @@ const uploadController = async (req, res) => {
   }
 };
 
-module.exports = uploadController;
+module.exports = uploadToSubagentsController;

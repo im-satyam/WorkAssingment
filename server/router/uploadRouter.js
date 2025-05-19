@@ -3,6 +3,7 @@ const multer = require("multer");
 const path = require("path");
 const uplaodController = require("../controller/uploadController");
 const authMiddleware = require("../middleware/authMiddleware");
+const uploadToSubagentsController = require("../controller/aUploadController");
 
 const router = express.Router();
 
@@ -28,6 +29,13 @@ const fileFilter = (req, file, cb) => {
 const upload = multer({ storage, fileFilter });
 
 // POST /api/upload
+
 router.post("/upload", upload.single("file"), authMiddleware, uplaodController);
+router.post(
+  "/agent-upload",
+  upload.single("file"),
+  authMiddleware,
+  uploadToSubagentsController
+);
 
 module.exports = router;

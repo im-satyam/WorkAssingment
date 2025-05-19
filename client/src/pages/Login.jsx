@@ -13,8 +13,15 @@ export default function Login() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (localStorage.getItem("token")) {
-      navigate("/dashboard");
+    const token = localStorage.getItem("token");
+    const role = localStorage.getItem("role");
+
+    if (token) {
+      if (role === "agent") {
+        navigate("/agentdashboard");
+      } else {
+        navigate("/dashboard");
+      }
     }
   }, [navigate]);
 
@@ -23,34 +30,43 @@ export default function Login() {
   };
 
   const handleSubmit = async (e) => {
-  e.preventDefault();
-  try {
-    const response = await axios.post("http://localhost:8080/v1/login", formData);
-    if (response.data.success) {
-    const token = response.data.token;
-    localStorage.setItem("token", token);
+    e.preventDefault();
+    try {
+      const response = await axios.post("http://localhost:8080/v1/login", formData);
 
-    toast.success(response.data.message, {
-      position: "top-center",
-      autoClose: 2000,
-    });
+      if (response.data.success) {
+        const token = response.data.token;
+        const user = response.data.user; // ✅ Correct variable name
 
-    navigate("/dashboard");
-    }else{
-        toast.error(response.data.message, {
-            position: "top-center",
-            autoClose: 3000,
+        // Store token and role
+        localStorage.setItem("token", token);
+        localStorage.setItem("role", user.role);
+
+        toast.success(response.data.message, {
+          position: "top-center",
+          autoClose: 2000,
         });
-    }
-  } catch (error) {
-    const message = error.response?.data?.message || "Login failed. Try again.";
-    toast.error(message, {
-      position: "top-center",
-      autoClose: 3000,
-    });
-  }
-};
 
+        // Redirect based on user role
+        if (user.role === "agent") {
+          navigate("/agentdashboard");
+        } else {
+          navigate("/dashboard");
+        }
+      } else {
+        toast.error(response.data.message, {
+          position: "top-center",
+          autoClose: 3000,
+        });
+      }
+    } catch (error) {
+      const message = error.response?.data?.message || "Login failed. Try again.";
+      toast.error(message, {
+        position: "top-center",
+        autoClose: 3000,
+      });
+    }
+  };
 
   return (
     <div className="flex justify-center items-center min-h-screen bg-gray-100">
@@ -63,6 +79,7 @@ export default function Login() {
           placeholder="Email"
           onChange={handleChange}
           className="w-full mb-4 px-4 py-2 border rounded"
+          required
         />
 
         <input
@@ -71,6 +88,7 @@ export default function Login() {
           placeholder="Password"
           onChange={handleChange}
           className="w-full mb-4 px-4 py-2 border rounded"
+          required
         />
 
         <button className="bg-blue-500 text-white w-full py-2 rounded hover:bg-blue-600">
@@ -85,7 +103,6 @@ export default function Login() {
         </p>
       </form>
 
-      {/* Toasts */}
       <ToastContainer />
     </div>
   );

@@ -3,7 +3,7 @@ import { User, UserPlus } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-export default function Dashboard() {
+export default function D2() {
   const [file, setFile] = useState(null);
   const [agents, setAgents] = useState([]);
   const navigate = useNavigate();
@@ -43,7 +43,7 @@ export default function Dashboard() {
 
       const token = localStorage.getItem("token");
 
-      const response = await axios.post("http://localhost:8080/v1/upload", formData, {
+      const response = await axios.post("http://localhost:8080/v1/agent-upload", formData, {
         headers: {
           "Content-Type": "multipart/form-data",
           Authorization: `Bearer ${token}`,
@@ -61,10 +61,10 @@ export default function Dashboard() {
   };
 
   const goToAddAgent = () => {
-  navigate("/agent");
+  navigate("/subagent");
 };
   const goToAgent = () => {
-  navigate("/viewagent");
+  navigate("/viewsubagent");
 };
 
   const handleLogout = () => {

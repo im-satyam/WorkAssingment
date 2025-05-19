@@ -1,9 +1,14 @@
 const mongoose = require("mongoose");
-const agentSchema = new mongoose.Schema(
+const subAgentSchema = new mongoose.Schema(
   {
+    userId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "agents",
+      required: true,
+    },
     role: {
       type: String,
-      default: "agent",
+      default: "subagent",
     },
     name: {
       type: String,
@@ -38,4 +43,4 @@ const agentSchema = new mongoose.Schema(
   },
   { timestamps: true }
 );
-module.exports = mongoose.model("agents", agentSchema);
+module.exports = mongoose.model("subagents", subAgentSchema);
